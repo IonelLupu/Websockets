@@ -25,4 +25,5 @@ function sendMessage(){
 
 document.getElementById("send").addEventListener("click", function(){
     sendMessage();
+    document.getElementById("message").value = "";
 });
