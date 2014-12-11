@@ -1,5 +1,2 @@
-Websockets
-==========
-
 Websockets - Made Easy
----
+==========
