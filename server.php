@@ -11,7 +11,7 @@ WS::onopen(function($client) use (&$online) {
 	WS::emit("notify",[
 			"msg" 		=> $client["ip"]."(".$client['name'].") has connected.",
 			"online" 	=> ++$online 
-		]);
+		],WS::EMIT_LIST);
 });
 
 WS::onclose(function($client) use (&$online) {
