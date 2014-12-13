@@ -11,7 +11,7 @@
 		<textarea id="chatarea" cols="60" rows="15" readonly></textarea>
 	</div>
 	<div>
-		<input type="text" id="message" style="width:390px">
+		<input type="text" id="message" style="width:390px" onkeypress="if (event.keyCode == 13) sendMessage()">
 		<button id="send">Send</button>
 	</div>
 	<script src="websocket.js"></script>

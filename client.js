@@ -19,11 +19,7 @@ WS.on("message",function(msg){
 })
 
 function sendMessage(){
-	var input = document.getElementById("message").value;
-	WS.emit("send",input);
+	WS.emit("send",document.getElementById("message").value);
+	document.getElementById("message").value = "";
 }
-
-document.getElementById("send").addEventListener("click", function(){
-    sendMessage();
-    document.getElementById("message").value = "";
-});
+document.getElementById("send").addEventListener("click", sendMessage);
