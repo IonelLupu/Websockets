@@ -150,7 +150,7 @@ class PHPWebSocket
 								}
 							}
 							else {
-								// 0 bytes received from client, meaning the client closed the TCP connection
+								// 0 bytes received from client, meaning the client 3d the TCP connection
 								$this->wsRemoveClient($clientID);
 							}
 					}
@@ -193,6 +193,7 @@ class PHPWebSocket
 		if($func) $func();
 
 	}
+
 	function wsStopServer() {
 		// check if server is not running
 		if (!isset($this->wsRead[0])) return false;
@@ -307,13 +308,30 @@ class PHPWebSocket
 		return $this->wsClients[$clientID][0];
 	}
 
+	function getHeaders ($buffer) {
+		$URL     = preg_match("/GET (.*) HTTP/", $buffer, $match)?$match[1]:NULL;
+		$host    = preg_match("/Host: (.*)\r\n/", $buffer, $match)?$match[1]:NULL;
+		$cookies = preg_match("/Cookie: (.*)\r\n/", $buffer, $match)?$match[1]:NULL;
+		$origin  = preg_match("/Origin: (.*)\r\n/", $buffer, $match)?$match[1]:NULL;
+		$secKey  = preg_match("/Sec-WebSocket-Key: (.*)\r\n/", $buffer, $match)?$match[1]:NULL;
+		return [$URL, $host, $cookies, $origin, $secKey];
+	}
 	// client read functions
 	function wsProcessClient($clientID, &$buffer, $bufferLength) {
+		
+
 		if ($this->wsClients[$clientID][2] == self::WS_READY_STATE_OPEN) {
 			// handshake completed
 			$result = $this->wsBuildClientFrame($clientID, $buffer, $bufferLength);
+			self::log("BUFFER:");
+			self::log($bufferLength);
 		}
 		elseif ($this->wsClients[$clientID][2] == self::WS_READY_STATE_CONNECTING) {
+			self::log($this->wsClients[$clientID][2]);
+			$data                                    = $this->getHeaders( $buffer );
+			self::log($data);
+			$PHPSESSID                               = explode("=",$data[2])[1];
+			$this->wsClients[$clientID]["PHPSESSID"] = $PHPSESSID;
 			// handshake not completed
 			$result = $this->wsProcessClientHandshake($clientID, $buffer);
 			if ($result) {
@@ -750,9 +768,8 @@ class PHPWebSocket
 		return $this->wsSendClientMessage($clientID, $binary ? self::WS_OPCODE_BINARY : self::WS_OPCODE_TEXT, $message);
 	}
 
-	function log( $message )
-	{
-		echo date('Y-m-d H:i:s: ') . $message . "\n";
+	public static  function log($msg){
+		print_r($msg);echo "\n";
 	}
 
 	function bind( $type, $func )
@@ -807,7 +824,7 @@ class WS extends PHPWebSocket{
 	 * Logs message into console
 	 * @param  [mixed] $msg message to print
 	 */
-	public  function log($msg){
+	public static  function log($msg){
 		print_r($msg);echo "\n";
 	}
 
@@ -864,6 +881,7 @@ class WS extends PHPWebSocket{
 			self::$server->wsClients[$client]["info"]["id"]   = $client;
 			self::$server->wsClients[$client]["info"]["ip"]   = $ip;
 			self::$server->wsClients[$client]["info"]["name"] = $client;
+			self::$server->wsClients[$client]["info"]["full"] =self::$server->wsClients[$client];
 			
 			$func(self::$server->wsClients[$client]['info']);
 		};
@@ -907,5 +925,4 @@ class WS extends PHPWebSocket{
 
 }
 
-
-
+?>
